@@ -1,0 +1,234 @@
+package chipmunk;
+
+import java.util.Random;
+
+public class Chip8 implements Chip8I
+{
+    private DisplayI screen;
+    private InputI pad;
+
+    private final OpI[] opcodeMap = new OpI[] {
+        a -> jump(a), a -> jump(a), a -> jump(a),     a -> cmp(a),
+        a -> cmp(a),  a -> cmp(a),  a -> set(a),      a -> add(a),
+        a -> math(a), a -> cmp(a),  a -> point(a),    a -> jump(a),
+        a -> rand(a), a -> draw(a), a -> keypress(a), a -> io(a)
+    };
+
+    private final int flag = 15;
+
+    private int pc;
+    private int sp;
+    private int[] stack;
+    private int index;
+    private int[] mem;
+    private int[] register;
+    private boolean copy;
+
+    public Chip8(int[] code)
+    {
+        sp = index = 0;
+        pc = 0x200;
+
+        stack = new int[16];
+        mem = new int[4096];
+        System.arraycopy(code, 0, mem, pc, code.length);
+        System.arraycopy(Font.font, 0, mem, Font.location, Font.length);
+
+        register = new int[16];
+
+        screen = new TextGrid();
+        pad = new HexPad();
+
+        copy = false;
+    }
+
+    @Override
+    public void run()
+    {
+        execute (new Word(mem[pc], mem[pc+1]));
+        pc += 2;
+
+        //FakeThread.yield();
+    }
+
+    @Override
+    public void execute(Word instruction)
+    {
+        opcodeMap[instruction.op()].execute(instruction);
+    }
+
+    @Override
+    public void jump(Word address)
+    {
+        switch (address.op())
+        {
+            case 0:
+                if (address.n() == 0)
+                    screen.clear();
+                else
+                    pc = stack[sp--];
+                break;
+            case 2:
+                stack[++sp] = pc;
+            case 1:
+                pc = address.nnn() - 2;
+                break;
+            case 0xB:
+                pc = address.nnn() + register[0];
+        }
+    }
+
+    @Override
+    public void cmp(Word args)
+    {
+        final CmpI[] map = new CmpI[] {
+            null, null, null,
+            (m, n) -> m == n, (m, n) -> m != n, (m, n) -> m == n,
+            null, null, null,
+            (m, n) -> m != n
+        };
+
+        final int[] vals = new int[] {
+            0, 0, 0,
+            args.nn(), args.nn(), register[args.y()],
+            0, 0, 0,
+            register[args.y()]
+        };
+
+        final int op = args.op();
+
+        final int a = register[args.x()];
+        final int b = vals[op];
+
+        if (map[op].cmp(a, b))
+            pc += 2;
+    }
+
+    @Override
+    public void set(Word args)
+    {
+        register[args.x()] = args.nn();
+    }
+
+    @Override
+    public void add(Word args)
+    {
+        register[args.x()] += args.nn();
+        register[args.x()] &= 0xFF;
+    }
+
+    @Override
+    public void math(Word regs)
+    {
+        MathI lshift, rshift;
+        MathI lflow, rflow;
+
+        if (copy) {
+            lshift = (m, n) -> n << 1;
+            rshift = (m, n) -> n >> 1;
+            lflow = (m, n) -> Word.getBit(n, 7) ? 1 : 0;
+            rflow = (m, n) -> Word.getBit(n, 0) ? 1 : 0;
+        } else {
+            lshift = (m, n) -> m << 1;
+            rshift = (m, n) -> m >> 1;
+            lflow = (m, n) -> Word.getBit(m, 7) ? 1 : 0;
+            rflow = (m, n) -> Word.getBit(m, 0) ? 1 : 0;
+        }
+
+        final MathI[] map = new MathI[] {
+            (m, n) -> n,     (m, n) -> m | n, (m, n) -> m & n,
+            (m, n) -> m ^ n, (m, n) -> m + n, (m, n) -> m - n,
+            rshift,          (m, n) -> n - m, null,
+            null,            null,            null,
+            null,            null,            lshift
+        };
+        final MathI[] flow = new MathI[] {
+            (m, n) -> 0, (m, n) -> 0,                       (m, n) -> 0,
+            (m, n) -> 0, (m, n) -> (m + n > 0xFF) ? 1 : 0,  (m, n) -> (m >= n) ? 1 : 0,
+            rflow,       (m, n) -> (n >= m) ? 1 : 0,        null,
+            null,        null,                              null,
+            null,        null,                              lflow
+        };
+
+        final int x = regs.x();
+        final int y = regs.y();
+        final int op = regs.n();
+        final int savex = register[x];
+        final int savey = register[y];
+
+        register[x] = map[op].math(savex, savey) & 0xFF;
+        register[flag] = flow[op].math(savex, savey);
+    }
+
+    @Override
+    public void point(Word address)
+    {
+        index = address.nnn();
+    }
+
+    @Override
+    public void rand(Word args)
+    {
+        final Random rand = new Random();
+        
+        register[args.x()] = rand.nextInt(256) & args.nn();
+    }
+
+    @Override
+    public void draw(Word args)
+    {
+        // wrap on coordinate overflow
+        int x = register[args.x()] % screen.width();
+        int y = register[args.y()] % screen.height();
+        int len = args.n();
+
+        boolean[][] sprite = new boolean[len][8];
+        int[] img = new int[len];
+
+        System.arraycopy(mem, index, img, 0, len);
+
+        sprite = Word.bitEncode(img);
+
+        register[flag] = screen.draw(x, y, sprite) ? 1 : 0;
+        screen.output();
+    }
+
+    @Override
+    public void keypress(Word type)
+    {
+        if (type.n() == 0xE && register[type.x()] == pad.key(false))
+            pc += 2;
+        if (type.n() == 0x1 && register[type.x()] != pad.key(false))
+            pc += 2;
+    }
+
+    @Override
+    public void io(Word type)
+    {
+        switch (type.nn()) {
+            case 0x65:
+                System.arraycopy(mem, index, register, 0, type.x()+1);
+                break;
+            case 0x55:
+                System.arraycopy(register, 0, mem, index, type.x()+1);
+                break;
+            case 0x1e:
+                index += register[type.x()];
+
+                if (index >= 0x1000)
+                    register[flag] = 1;
+                break;
+            case 0x29:
+                index = Font.address(register[type.x()]);
+                break;
+            case 0x33:
+                int num = register[type.x()];
+               
+                for (int i = 2; i >= 0; i--) {
+                    mem[index+i] = num % 10;
+                    num /= 10;
+                }
+                break;
+        }
+    }
+}
