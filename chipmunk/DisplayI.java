@@ -9,4 +9,5 @@ public interface DisplayI
 
     public int width();
     public int height();
+	public boolean on(int x, int y);
 }
