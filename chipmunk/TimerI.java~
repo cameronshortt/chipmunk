@@ -1,0 +1,9 @@
+package chipmunk;
+
+public interface TimerI
+{
+	public void set();
+	public void get();
+
+	public void run();
+}

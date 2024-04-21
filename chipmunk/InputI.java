@@ -1,7 +1,11 @@
 package chipmunk;
 
+import java.awt.event.KeyListener;
+
 public interface InputI
 {
     public boolean keyDown();
-    public char key(boolean block);
+    public char key();
+
+	public KeyListener listener();
 }

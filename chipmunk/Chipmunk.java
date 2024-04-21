@@ -43,7 +43,7 @@ public class Chipmunk
         //FakeThread.sleep = 1000 / 60;
         //FakeThread.yield();
 
-        ClockWorker.initialize(1000 / 60);
+        ClockWorker.initialize(1);
         ClockWorker.addTask(new Task() {
             @Override
             public void run()

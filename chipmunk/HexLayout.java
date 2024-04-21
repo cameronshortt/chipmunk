@@ -24,13 +24,18 @@ public class HexLayout implements KeymapI
 
     public boolean contains(char c)
     {
-        for (i = 0; c != pad[i]; i++);
+        for (i = 0; i < pad.length; i++)
+			if (c == pad[i])
+				return true;
 
-        return i != pad.length;
+        return false;
     }
 
     public char get()
     {
-        return hex[i];
+		if (i < pad.length)
+		    return hex[i];
+		else
+			return 255;
     }
 }

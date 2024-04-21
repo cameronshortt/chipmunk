@@ -57,7 +57,7 @@ public class TextGrid implements DisplayI
 
                     screen[i+y][j+x] ^= sprite[i][j];
 
-                    if (save != screen[i+y][j+x])
+                    if (screen[i+y][j+x] != sprite[i][j])
                         mod = true;
                 }
             }

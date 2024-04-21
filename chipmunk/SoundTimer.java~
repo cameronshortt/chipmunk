@@ -1,0 +1,18 @@
+package chipmunk;
+
+public class SoundTimer implements SoundI, TimerI
+{
+
+	@Override
+	public void beep()
+	{
+
+	}
+
+	// unused, no instruction
+	@Override
+	public int get()
+	{
+		return 0;
+	}
+}

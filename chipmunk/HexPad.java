@@ -1,19 +1,22 @@
 package chipmunk;
 
+import java.awt.event.KeyAdapter;
 import java.awt.event.KeyListener;
 import java.awt.event.KeyEvent;
 
-public class HexPad implements InputI, KeyListener
+public class HexPad implements InputI
 {
     private boolean isDown;
     private char keycode;
 
     private KeymapI keys;
 
+	private final char badKey = 255;
+	
     public HexPad()
     {
         isDown = false;
-        keycode = '\0';
+        keycode = badKey;
         keys = new HexLayout();
     }
 
@@ -24,30 +27,35 @@ public class HexPad implements InputI, KeyListener
     }
 
     @Override
-    public char key(boolean block)
+    public char key()
     {
-        while (block && !isDown);
-
         return keycode;
     }
 
-    @Override
-    public void keyPressed(KeyEvent e)
-    {
-        if (keys.contains(e.getKeyChar())) {
-            keycode = keys.get();
-            isDown = true;
-        }
-    }
+	@Override
+	public KeyListener listener()
+	{
+		return events;
+	}
 
-    @Override
-    public void keyReleased(KeyEvent e)
-    {
-        if (keys.contains(e.getKeyChar()))
-            isDown = false;
-    }  
-    
-    // unused
-    @Override
-    public void keyTyped(KeyEvent e) {}
+	private final KeyListener events = new KeyAdapter()
+	{
+        @Override
+        public void keyPressed(KeyEvent e)
+        {
+            if (keys.contains(e.getKeyChar())) {
+				keycode = keys.get();
+                isDown = true;
+			}
+        }
+
+        @Override
+        public void keyReleased(KeyEvent e)
+        {
+            if (keys.contains(e.getKeyChar())) {
+				keycode = badKey;
+			    isDown = false;
+			}
+        }
+	};
 }

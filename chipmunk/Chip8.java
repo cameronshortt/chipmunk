@@ -1,11 +1,16 @@
 package chipmunk;
 
+import basicgraphics.ClockWorker;
+import basicgraphics.Task;
+
 import java.util.Random;
 
 public class Chip8 implements Chip8I
 {
     private DisplayI screen;
     private InputI pad;
+	private SoundTimer sound;
+	private TimerI delay;
 
     private final OpI[] opcodeMap = new OpI[] {
         a -> jump(a), a -> jump(a), a -> jump(a),     a -> cmp(a),
@@ -36,10 +41,28 @@ public class Chip8 implements Chip8I
 
         register = new int[16];
 
-        screen = new GraphicGrid();
         pad = new HexPad();
+        screen = new GraphicGrid(pad);
+		sound = new SoundTimer();
+		delay = new DelayTimer();
 
         copy = false;
+
+		ClockWorker.initialize(1000 / 60);
+		ClockWorker.addTask(new Task() {
+			@Override
+		 	public void run()
+	   		{
+   				sound.run();
+			}
+		});
+		ClockWorker.addTask(new Task() {
+			@Override
+		   	public void run()
+		   	{
+		   		delay.run();
+		   	}
+		});
     }
 
     @Override
@@ -74,7 +97,7 @@ public class Chip8 implements Chip8I
                 pc = address.nnn() - 2;
                 break;
             case 0xB:
-                pc = address.nnn() + register[0];
+                pc = address.nnn() + register[address.x()];
         }
     }
 
@@ -196,9 +219,9 @@ public class Chip8 implements Chip8I
     @Override
     public void keypress(Word type)
     {
-        if (type.n() == 0xE && register[type.x()] == pad.key(false))
+        if (type.n() == 0xE && register[type.x()] == pad.key(     ))
             pc += 2;
-        if (type.n() == 0x1 && register[type.x()] != pad.key(false))
+        if (type.n() == 0x1 && register[type.x()] != pad.key(     ))
             pc += 2;
     }
 
@@ -206,6 +229,23 @@ public class Chip8 implements Chip8I
     public void io(Word type)
     {
         switch (type.nn()) {
+		    case 0x0a:
+				char c;
+
+				if ((c = pad.key()) != 255)
+					register[type.x()] = c;
+				else
+					pc -= 2;
+				break;
+	    	case 0x07:
+				register[type.x()] = delay.get();
+				break;
+		    case 0x15:
+				delay.set(register[type.x()]);
+				break;
+		    case 0x18:
+				sound.set(register[type.x()]);
+				break;
             case 0x65:
                 System.arraycopy(mem, index, register, 0, type.x()+1);
                 break;

@@ -14,7 +14,7 @@ public class GraphicGrid extends TextGrid
 {
 	final SpriteComponent bg;
 	
-    public GraphicGrid()
+    public GraphicGrid(InputI pad)
     {
 		super();
 		
@@ -56,6 +56,9 @@ public class GraphicGrid extends TextGrid
 		box.add("Screen", bg);
 
 	    frame.show();
+
+		box.requestFocus();
+		box.addKeyListener(pad.listener());
     }
 
     @Override
