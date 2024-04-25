@@ -1,8 +1,24 @@
 package chipmunk;
 
-public class Font
+public class Font implements FontI
 {
-    public static final int[] font = new int[]
+	/*
+	 * This is the traditional Chip-8 bitmap font.
+	 * It's stored as an array of bits, so...
+     *
+	 * 11110000 ####.... = 0xF0
+	 * 10010000 #..#.... = 0x90
+	 * 10010000 #..#.... = 0x90
+	 * 10010000 #..#.... = 0x90
+	 * 11110000 ####.... = 0xF0
+	 *
+	 * ...draws a 0.
+	 *
+	 * The only characters supplied are /[0-9A-F]/,
+	 * so most games just supply their own font.
+	 */
+	
+    public final int[] letters = new int[]
     {
         0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
         0x20, 0x60, 0x20, 0x20, 0x70, // 1
@@ -22,11 +38,30 @@ public class Font
         0xF0, 0x80, 0xF0, 0x80, 0x80  // F
     };
 
-    public static final int location = 0x50;
-    public static final int length = 80;
+    public final int addr = 0x50;
+    public final int len = 80;
 
-    public static int address(int character)
+	@Override
+	public int[] font()
+	{
+		return letters;
+	}
+
+	@Override
+	public int location()
+	{
+		return addr;
+	}
+
+	@Override
+	public int length()
+	{
+		return len;
+	}
+
+	@Override
+    public int address(int character)
     {
-        return character * 5 + location;
+        return character * 5 + addr;
     }
 }

@@ -1,0 +1,6 @@
+package chipmunk;
+
+public interface BigDisplay
+{
+	public void scroll(int down, int right);
+}

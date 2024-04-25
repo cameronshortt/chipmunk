@@ -34,7 +34,9 @@ public class SoundTimer implements SoundI, TimerI
 	@Override
 	public void run()
 	{
-		if (timer > 0)
+		if (timer > 0) {
+			beep();
 			timer--;
+		}
 	}
 }

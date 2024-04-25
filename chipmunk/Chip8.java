@@ -7,27 +7,28 @@ import java.util.Random;
 
 public class Chip8 implements Chip8I
 {
-    private DisplayI screen;
-    private InputI pad;
+    public DisplayI screen;
+    public InputI pad;
+	public FontI font;
 	private SoundTimer sound;
 	private TimerI delay;
 
-    private final OpI[] opcodeMap = new OpI[] {
+    public OpI[] opcodeMap = new OpI[] {
         a -> jump(a), a -> jump(a), a -> jump(a),     a -> cmp(a),
         a -> cmp(a),  a -> cmp(a),  a -> set(a),      a -> add(a),
         a -> math(a), a -> cmp(a),  a -> point(a),    a -> jump(a),
         a -> rand(a), a -> draw(a), a -> keypress(a), a -> io(a)
     };
 
-    private final int flag = 15;
+    public final int flag = 15;
 
-    private int pc;
-    private int sp;
-    private int[] stack;
-    private int index;
-    private int[] mem;
-    private int[] register;
-    private boolean copy;
+    public int pc;
+    public int sp;
+    public int[] stack;
+    public int index;
+    public int[] mem;
+    public int[] register;
+    public boolean copy;
 
     public Chip8(int[] code)
     {
@@ -37,7 +38,9 @@ public class Chip8 implements Chip8I
         stack = new int[16];
         mem = new int[4096];
         System.arraycopy(code, 0, mem, pc, code.length);
-        System.arraycopy(Font.font, 0, mem, Font.location, Font.length);
+
+		font = new Font();
+        System.arraycopy(font.font(), 0, mem, font.location(),  font.length());
 
         register = new int[16];
 
@@ -48,7 +51,6 @@ public class Chip8 implements Chip8I
 
         copy = false;
 
-		ClockWorker.initialize(1000 / 60);
 		ClockWorker.addTask(new Task() {
 			@Override
 		 	public void run()
@@ -213,7 +215,6 @@ public class Chip8 implements Chip8I
         sprite = Word.bitEncode(img);
 
         register[flag] = screen.draw(x, y, sprite) ? 1 : 0;
-        screen.output();
     }
 
     @Override
@@ -259,7 +260,7 @@ public class Chip8 implements Chip8I
                     register[flag] = 1;
                 break;
             case 0x29:
-                index = Font.address(register[type.x()]);
+                index = font.address(register[type.x()]);
                 break;
             case 0x33:
                 int num = register[type.x()];

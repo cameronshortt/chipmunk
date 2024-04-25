@@ -1,4 +1,6 @@
-* chipmunk
+#+title: Chipmunk - Chip8 Emulator
+#+author: Cameron Shortt
 
-- 1351 Project
-- Chip8 Emulator
+* Usage
+
+* What is This?

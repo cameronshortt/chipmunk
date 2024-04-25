@@ -1,0 +1,10 @@
+package chipmunk;
+
+public class Scroll implements Scrollable
+{
+	@Override
+	public void scroll(int down, int right)
+	{
+		// only here to be overrided
+	}
+}

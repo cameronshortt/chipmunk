@@ -99,4 +99,15 @@ public class Word
 
         return ret;
     }
+
+	public static boolean[][] bitEncode16(int[] arr)
+	{
+		boolean[][] ret = new boolean[16][16];
+
+		for (int i = 0; i < arr.length && i < 16; i++)
+			for (int bit = 0; bit < 16; bit++)
+				ret[i][bit] = getBit(arr[i], 15-bit);
+
+		return ret;
+	}
 }

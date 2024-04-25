@@ -2,7 +2,8 @@ build:
 	javac chipmunk/*.java
 
 clean:
-	rm -rf chipmunk/*.class basicgraphics/*.class *log chip8.tgz
+	find . |grep '[.]class' |xargs rm -f
+	rm -f chip8.tgz
 
 tar: clean
 	cd .. && tar cf chip8.tar chipmunk
@@ -10,4 +11,4 @@ tar: clean
 	mv ../chip8.tar.gz chip8.tgz
 
 sloc:
-	cloc chipmunk --by-file
+	scc chipmunk

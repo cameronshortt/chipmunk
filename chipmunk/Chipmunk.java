@@ -39,10 +39,6 @@ public class Chipmunk
 
         Chip8 chip = new Chip8(code);
 
-        //FakeThread.run = () -> chip.run();
-        //FakeThread.sleep = 1000 / 60;
-        //FakeThread.yield();
-
         ClockWorker.initialize(1);
         ClockWorker.addTask(new Task() {
             @Override

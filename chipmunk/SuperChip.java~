@@ -1,0 +1,64 @@
+package chipmunk;
+
+public class SuperChip extends Chip8 implements SuperChipI
+{
+	public SuperChip(int[] code)
+	{
+		super(code);
+
+		opcodeMap[0] = a -> scroll(a);
+		opcodeMap[15] = a -> etc(a);
+	}
+
+	@Override
+	public void scroll(Word dir)
+	{
+		final Runnable[] map = new Runnable[] {
+			null, null, null, null,
+			null, null, null, null,
+			null, null, null,
+			() -> screen.scroller().scroll(0, 4),
+			() -> screen.scroller().scroll(0, -4),
+			() -> System.exit(0),
+			() -> screen = new GraphicGrid(pad),
+			() -> screen = new BigGraphicGrid(pad)
+		};
+		final Runnable[] table = new Runnable[] {
+			null, null, null, null,
+			null, null, null, null,
+			null, null, null, null,
+			() -> screen.scroller().scroll(dir.n(), 0),
+			null,
+			() -> screen.clear(),
+			() -> map[dir.n()].run()
+		};
+
+		table[dir.y()].run();
+	}
+
+	@Override
+	public void draw(Word args)
+	{
+		if (args.n() != 0 || !screen.big())
+			return;
+
+		int x = register[args.x()] % screen.width();
+		int y = register[args.y()] % screen.height();
+
+		boolean[][] sprite = new boolean[16][16];
+		int[] img = new int[16];
+
+		System.arraycopy(mem, index, img, 0, 16);
+
+		sprite = Word.bitEncode16(img);
+
+		register[flag] = screen.draw(x, y, sprite) ? 1 : 0;
+		screen.output();
+	}
+
+	@Override
+	public void etc(Word args)
+	{
+
+	}
+}

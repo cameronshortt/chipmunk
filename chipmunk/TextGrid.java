@@ -2,16 +2,21 @@ package chipmunk;
 
 public class TextGrid implements DisplayI
 {
-    private boolean[][] screen;
+    public boolean[][] screen;
     private int width;
     private int height;
 
-    public TextGrid()
+    public TextGrid(int w, int h)
     {
-        width = 64;
-        height = 32;
+        width = w;
+        height = h;
         screen = new boolean[height][width];
     }
+
+	public TextGrid()
+	{
+		this(64, 32);
+	}
 
     @Override
     public int width()
@@ -73,4 +78,16 @@ public class TextGrid implements DisplayI
             for (int x = 0; x < width(); x++)
                 screen[y][x] = false;
     }
+
+	@Override
+	public boolean big()
+	{
+		return false;
+	}
+
+	@Override
+	public Scrollable scroller()
+	{
+		return null;
+	}
 }

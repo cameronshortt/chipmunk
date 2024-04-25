@@ -4,6 +4,9 @@ import basicgraphics.BasicContainer;
 import basicgraphics.BasicFrame;
 import basicgraphics.SpriteComponent;
 
+import basicgraphics.ClockWorker;
+import basicgraphics.Task;
+
 import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Container;
@@ -14,9 +17,9 @@ public class GraphicGrid extends TextGrid
 {
 	final SpriteComponent bg;
 	
-    public GraphicGrid(InputI pad)
+    public GraphicGrid(InputI pad, int w, int h)
     {
-		super();
+		super(w, h);
 		
 		final BasicFrame frame = new BasicFrame("Chipmunk");
 		final Container content = frame.getContentPane();
@@ -59,11 +62,30 @@ public class GraphicGrid extends TextGrid
 
 		box.requestFocus();
 		box.addKeyListener(pad.listener());
+
+		ClockWorker.addTask(new Task() {
+				@Override
+				public void run()
+				{
+					output();
+				}
+		});
     }
+
+	public GraphicGrid(InputI pad)
+	{
+		this(pad, 64, 32);
+	}
 
     @Override
     public void output()
     {
 		bg.repaint();
     }
+
+	@Override
+	public boolean big()
+	{
+		return false;
+	}
 }

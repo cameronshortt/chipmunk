@@ -1,0 +1,37 @@
+package chipmunk;
+
+public class BigGraphicGrid extends GraphicGrid
+{
+	public BigGraphicGrid(InputI pad)
+	{
+		super(pad, 128, 64);
+	}
+
+	@Override
+	public boolean big()
+	{
+		return true;
+	}
+
+	public Scrollable scroller()
+	{
+		final Scrollable sc = new Scroll() {
+			@Override
+			public void scroll(int down, int right)
+			{
+				for (int y = 0; y < height(); y++) {
+					for (int x = 0; x < width(); x++) {
+						if (y+down >= 0 && y+down < height())
+							screen[y+down][x] = screen[y][x];
+						if (x+right >= 0 && x+right < width())
+							screen[y][x+right] = screen[y][x];
+					}
+				}
+
+				output();
+			}
+		};
+
+		return sc;
+	}
+}
