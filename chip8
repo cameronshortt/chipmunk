@@ -1,1 +1,1 @@
-java chipmunk/Chipmunk roms/"$1"
+java chipmunk/Chipmunk "$1"

@@ -3,4 +3,14 @@
 
 * Usage
 
+$ sh chip8 roms/RPS.ch8
+
+You might have to click on the window to get it to accept
+keypresses. (none of my machines respond to this the same
+way)
+
 * What is This?
+
+It's a Chip-8 emulator!  You can run any of the roms
+provided, or try downloading one from online (it might
+not work if it relies on a nonstandard quirk though).
