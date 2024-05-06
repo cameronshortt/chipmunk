@@ -36,7 +36,9 @@ public class SoundTimer implements SoundI, TimerI
 	{
 		if (timer > 0) {
 			beep();
-			timer--;
+			timer = 0;  // this is supposed to decrement,
+			            // but the the sound file is also
+			            // supposed to be 16ms
 		}
 	}
 }
